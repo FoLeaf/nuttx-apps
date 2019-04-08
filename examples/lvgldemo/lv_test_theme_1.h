@@ -1,7 +1,7 @@
 /****************************************************************************
- * apps/examples/lvgldemo/demo.h
+ * apps/examples/lvgldemo/lv_test_theme_1.h
  *
- *   Copyright (C) 2019 Gábor Kiss-Vámosi. All rights reserved.
+ *   Copyright (C) 2016 2016 Gábor Kiss-Vámosi. All rights reserved.
  *   Author: Gábor Kiss-Vámosi <kisvegabor@gmail.com>
  *
  * Released under the following BSD-compatible MIT license:
@@ -29,8 +29,8 @@
  *
  ****************************************************************************/
 
-#ifndef __APPS_EXAMPLES_LVGLDEMO_DEMO_H
-#define __APPS_EXAMPLES_LVGLDEMO_DEMO_H
+#ifndef __APPS_EXAMPLES_LVGLDEMO_LV_TEST_THEME_1_H
+#define __APPS_EXAMPLES_LVGLDEMO_LV_TEST_THEME_1_H
 
 /****************************************************************************
  * Included Files
@@ -38,20 +38,24 @@
 
 #include <graphics/lvgl.h>
 
-#ifdef CONFIG_EXAMPLES_LVGLDEMO_SIMPLE
+#ifdef CONFIG_EXAMPLES_LVGLDEMO_THEME_1
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
-#ifdef CONFIG_EXAMPLES_LVGLDEMO_WALLPAPER
-#  define LV_DEMO_WALLPAPER 1
+#ifdef CONFIG_EXAMPLES_LVGLDEMO_THEME_1_HUE
+#  define EXAMPLES_LVGLDEMO_THEME_1_HUE CONFIG_EXAMPLES_LVGLDEMO_THEME_1_HUE
 #else
-#  define LV_DEMO_WALLPAPER 0
+#  define EXAMPLES_LVGLDEMO_THEME_1_HUE 30
 #endif
 
 /****************************************************************************
- * Public Function Prototypes
+ * Public Types
+ ****************************************************************************/
+
+/****************************************************************************
+ * Public Data
  ****************************************************************************/
 
 #ifdef __cplusplus
@@ -63,27 +67,23 @@ extern "C"
 #endif
 
 /****************************************************************************
- * Name: demo_create
- *
- * Description:
- *   Initialize the LVGL demo screen
- *
- * Input Parameters:
- *   None
- *
- * Returned Value:
- *   None
- *
- * Assumptions/Limitations:
- *
+ * Inline Functions
  ****************************************************************************/
 
-void demo_create(void);
+/****************************************************************************
+ * Public Function Prototypes
+ ****************************************************************************/
+
+/**
+ * Create a test screen with a lot objects and apply the given theme on them
+ * @param th pointer to a theme
+ */
+void lv_test_theme_1(lv_theme_t *th);
 
 #undef EXTERN
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CONFIG_EXAMPLES_LVGLDEMO_SIMPLE */
-#endif /* __APPS_EXAMPLES_LVGLDEMO_DEMO_H */
+#endif /* CONFIG_EXAMPLES_LVGLDEMO_THEME_1 */
+#endif /* __APPS_EXAMPLES_LVGLDEMO_LVGL_DEMO */
