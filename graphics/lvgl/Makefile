@@ -1,5 +1,5 @@
 ############################################################################
-# apps/graphics/littlevgl/Make.defs
+# apps/graphics/lvgl/Makefile
 #
 #   Copyright (C) 2018 Gregory Nutt. All rights reserved.
 #   Author: Gregory Nutt <gnutt@nuttx.org>
@@ -33,6 +33,65 @@
 #
 ############################################################################
 
-ifeq ($(CONFIG_GRAPHICS_LVGL),y)
-CONFIGURED_APPS += $(APPDIR)/graphics/littlevgl
-endif
+include $(TOPDIR)/Make.defs
+
+# LVGL graphic library
+
+LVGL_DIR = .
+LVGL_DIR_NAME = lvgl
+
+# LVGL Libraries
+
+-include ./lvgl/src/lv_core/lv_core.mk
+-include ./lvgl/src/lv_hal/lv_hal.mk
+-include ./lvgl/src/lv_widgets/lv_widgets.mk
+-include ./lvgl/src/lv_font/lv_font.mk
+-include ./lvgl/src/lv_misc/lv_misc.mk
+-include ./lvgl/src/lv_themes/lv_themes.mk
+-include ./lvgl/src/lv_draw/lv_draw.mk
+-include ./lvgl/src/lv_gpu/lv_gpu.mk
+
+# Set up build configuration and environment
+
+WD := ${shell echo $(CURDIR) | sed -e 's/ /\\ /g'}
+
+CONFIG_GRAPH_LVGL_URL ?= "https://github.com/lvgl/lvgl/archive"
+
+LVGL_VERSION ?= 7.0.2
+LVGL_TARBALL = v$(LVGL_VERSION).zip
+WGET ?= wget
+
+LVGL_UNPACKNAME = lvgl
+UNPACK ?= unzip -o
+
+LVGL_UNPACKDIR =  $(WD)/$(LVGL_UNPACKNAME)
+
+CFLAGS += ${shell $(INCDIR) "$(CC)" $(APPDIR)/graphics/lvgl}
+
+$(LVGL_TARBALL):
+	@echo "Downloading: $(LVGL_TARBALL)"
+	$(Q) $(WGET) $(CONFIG_GRAPH_LVGL_URL)/$(LVGL_TARBALL)
+
+$(LVGL_UNPACKNAME): $(LVGL_TARBALL)
+	@echo "Unpacking: $(LVGL_TARBALL) -> $(LVGL_UNPACKNAME)"
+	$(Q) $(UNPACK) $(LVGL_TARBALL)
+	$(Q) mv	lvgl-$(LVGL_VERSION) $(LVGL_UNPACKNAME)
+	$(Q) touch $(LVGL_UNPACKNAME)
+
+lvgl/lvgl.h: $(LVGL_UNPACKNAME)
+
+$(APPDIR)/include/graphics/lvgl.h: lvgl/lvgl.h
+	@echo "CP: lvgl/lvgl.h"
+	$(Q) cp lvgl/lvgl.h $(APPDIR)/include/graphics/lvgl.h
+
+context:: $(LVGL_UNPACKNAME) $(APPDIR)/include/graphics/lvgl.h
+
+clean::
+	$(call DELDIR, build)
+
+distclean::
+	$(call DELDIR, $(LVGL_UNPACKNAME))
+	$(call DELFILE, $(LVGL_TARBALL))
+	$(call DELFILE, $(APPDIR)/include/graphics/lvgl.h)
+
+include $(APPDIR)/Application.mk
