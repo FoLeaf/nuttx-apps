@@ -33,8 +33,8 @@
  *
  ****************************************************************************/
 
-#ifndef __APPS_GRAPHICS_LITTLEVGL_LV_CONF_H
-#define __APPS_GRAPHICS_LITTLEVGL_LV_CONF_H
+#ifndef __APPS_GRAPHICS_LVGL_LV_CONF_H
+#define __APPS_GRAPHICS_LVGL_LV_CONF_H
 
 /****************************************************************************
  * Included Files
@@ -125,6 +125,18 @@ typedef int16_t lv_coord_t;
 
 #define LV_DPI              CONFIG_LV_DPI     /* [px] */
 
+/* The the real width of the display changes some default values:
+ * default object sizes, layout of examples, etc.
+ * According to the width of the display (hor. res. / dpi)
+ * the displays fall in 4 categories.
+ * The 4th is extra large which has no upper limit so not listed here
+ * The upper limit of the categories are set below in 0.1 inch unit.
+ */
+
+#define LV_DISP_SMALL_LIMIT  30
+#define LV_DISP_MEDIUM_LIMIT 50
+#define LV_DISP_LARGE_LIMIT  70
+
 /****************************************************************************
  * Memory manager settings
  ****************************************************************************/
@@ -207,7 +219,17 @@ typedef int16_t lv_coord_t;
  * Time between `LV_EVENT_LONG_PRESSED_REPEAT
  */
 
-#define LV_INDEV_DEF_LONG_PRESS_REP_TIME  CONFIG_LV_INDEV_DEF_LONG_PRESS_REP_TIME
+#define LV_INDEV_DEF_LONG_PRESS_REP_TIME \
+          CONFIG_LV_INDEV_DEF_LONG_PRESS_REP_TIME
+
+/* Gesture threshold in pixels */
+
+#define LV_INDEV_DEF_GESTURE_LIMIT   CONFIG_LV_INDEV_DEF_GESTURE_LIMIT
+
+/* Gesture min velocity at release before swipe (pixels) */
+
+#define LV_INDEV_DEF_GESTURE_MIN_VELOCITY \
+          CONFIG_LV_INDEV_DEF_GESTURE_MIN_VELOCITY
 
 /****************************************************************************
  * Feature usage
@@ -238,6 +260,30 @@ typedef void * lv_anim_user_data_t;
 #else
 #define LV_USE_SHADOW           0
 #endif
+
+#if LV_USE_SHADOW
+/* Allow buffering some shadow calculation
+ * LV_SHADOW_CACHE_SIZE is the max. shadow size to buffer,
+ * where shadow size is `shadow_width + radius`
+ * Caching has LV_SHADOW_CACHE_SIZE^2 RAM cost
+ */
+
+# define LV_SHADOW_CACHE_SIZE    0
+#endif
+
+/* 1: Use other blend modes than normal (`LV_BLEND_MODE_...`) */
+
+#define LV_USE_BLEND_MODES      1
+
+/* 1: Use the `opa_scale` style property to set the opacity
+ * of an object and its children at once
+ */
+
+#define LV_USE_OPA_SCALE        1
+
+/* 1: Use image zoom and rotation */
+
+#define LV_USE_IMG_TRANSFORM    1
 
 /* 1: Enable object groups (for keyboard/encoder navigation) */
 
@@ -281,6 +327,14 @@ typedef void * lv_fs_drv_user_data_t;
 #else
 #define LV_USE_USER_DATA        0
 #endif
+
+/* 1: Show CPU usage and FPS count in the right bottom corner */
+
+#define LV_USE_PERF_MONITOR     0
+
+/* 1: Use the functions and types from the older API if possible */
+
+#define LV_USE_API_EXTENSION_V6  1
 
 /****************************************************************************
  * Image decoder and cache
@@ -345,6 +399,12 @@ typedef void * lv_img_decoder_user_data_t;
  */
 
 #define LV_ATTRIBUTE_LARGE_CONST
+
+/* Prefix performance critical functions to place them into a
+ * faster memory (e.g RAM). Uses 15-20 kB extra memory
+ */
+
+#define LV_ATTRIBUTE_FAST_MEM
 
 /* Export integer constant to binding.
  * This macro is used with constants in the form of LV_<CONST> that
@@ -438,13 +498,11 @@ typedef void * lv_indev_drv_user_data_t;            /* Type of user data in the 
  * E.g. #define LV_ASSERT_MEM(p)  <my_assert_code>
  */
 
-#ifdef CONFIG_LV_USE_DEBUG
-#define LV_USE_DEBUG      CONFIG_LV_USE_DEBUG
-#else
-#define LV_USE_DEBUG      0
+#ifndef CONFIG_LV_USE_DEBUG
+#define CONFIG_LV_USE_DEBUG   0
 #endif
 
-#if LV_USE_DEBUG
+#define LV_USE_DEBUG      CONFIG_LV_USE_DEBUG
 
 /* Check if the parameter is NULL. (Quite fast) */
 
@@ -461,6 +519,10 @@ typedef void * lv_indev_drv_user_data_t;            /* Type of user data in the 
 #else
 #define LV_USE_ASSERT_MEM      0
 #endif
+
+/* Check the integrity of `lv_mem` after critical operations. (Slow) */
+
+#define LV_USE_ASSERT_MEM_INTEGRITY       0
 
 /* Check the strings.
  * Search for NULL, very long strings, invalid characters,
@@ -494,109 +556,95 @@ typedef void * lv_indev_drv_user_data_t;            /* Type of user data in the 
 #define LV_USE_ASSERT_STYLE      0
 #endif
 
-#endif /* LV_USE_DEBUG */
-
 /****************************************************************************
  *  THEME USAGE
  ****************************************************************************/
 
-#ifdef CONFIG_LV_THEME_LIVE_UPDATE
-#define LV_THEME_LIVE_UPDATE    CONFIG_LV_THEME_LIVE_UPDATE
-#else
-#define LV_THEME_LIVE_UPDATE    0   /* 1: Allow theme switching at run time. Uses 8..10 kB of RAM */
-#endif
+/* Always enable at least on theme */
 
-#ifdef CONFIG_LV_THEME_LIVE_TEMPL
-#define LV_USE_THEME_TEMPL      CONFIG_LV_USE_THEME_TEMPL
-#else
-#define LV_USE_THEME_TEMPL      0   /* Just for test */
-#endif
+/* No theme, you can apply your styles as you need
+ * No flags. Set LV_THEME_DEFAULT_FLAG 0
+ */
 
-#ifdef CONFIG_LV_USE_THEME_DEFAULT
-#define LV_USE_THEME_DEFAULT    CONFIG_LV_USE_THEME_DEFAULT
-#else
-#define LV_USE_THEME_DEFAULT    0   /* Built mainly from the built-in styles. Consumes very few RAM */
-#endif
+#define LV_USE_THEME_EMPTY       1
 
-#ifdef CONFIG_LV_USE_THEME_ALIEN
-#define LV_USE_THEME_ALIEN      CONFIG_LV_USE_THEME_ALIEN
-#else
-#define LV_USE_THEME_ALIEN      0   /* Dark futuristic theme */
-#endif
+/* Simple to the create your theme based on it
+ * No flags. Set LV_THEME_DEFAULT_FLAG 0
+ */
 
-#ifdef CONFIG_LV_USE_THEME_NIGHT
-#define LV_USE_THEME_NIGHT      CONFIG_LV_USE_THEME_NIGHT
-#else
-#define LV_USE_THEME_NIGHT      0   /* Dark elegant theme */
-#endif
+#define LV_USE_THEME_TEMPLATE    1
 
-#ifdef CONFIG_LV_USE_THEME_MONO
-#define LV_USE_THEME_MONO       CONFIG_LV_USE_THEME_MONO
-#else
-#define LV_USE_THEME_MONO       0   /* Mono color theme for monochrome displays */
-#endif
+/* A fast and impressive theme.
+ * Flags:
+ * LV_THEME_MATERIAL_FLAG_LIGHT: light theme
+ * LV_THEME_MATERIAL_FLAG_DARK: dark theme
+ */
 
-#ifdef  CONFIG_LV_USE_THEME_MATERIAL
-#define LV_USE_THEME_MATERIAL   CONFIG_LV_USE_THEME_MATERIAL
-#else
-#define LV_USE_THEME_MATERIAL   0   /* Flat theme with bold colors and light shadows */
-#endif
+#define LV_USE_THEME_MATERIAL    1
 
-#ifdef CONFIG_LV_USE_THEME_ZEN
-#define LV_USE_THEME_ZEN        CONFIG_LV_USE_THEME_ZEN
-#else
-#define LV_USE_THEME_ZEN        0   /* Peaceful, mainly light theme */
-#endif
+/* Mono-color theme for monochrome displays.
+ * If LV_THEME_DEFAULT_COLOR_PRIMARY is LV_COLOR_BLACK the
+ * texts and borders will be black and the background will be
+ * white. Else the colors are inverted.
+ * No flags. Set LV_THEME_DEFAULT_FLAG 0
+ */
 
-#ifdef CONFIG_LV_USE_THEME_NEMO
-#define LV_USE_THEME_NEMO       CONFIG_LV_USE_THEME_NEMO
-#else
-#define LV_USE_THEME_NEMO       0   /* Water-like theme based on the movie "Finding Nemo" */
-#endif
+#define LV_USE_THEME_MONO        1
+
+#define LV_THEME_DEFAULT_INCLUDE            <stdint.h>      /* Include a header for the init. function */
+#define LV_THEME_DEFAULT_INIT               lv_theme_material_init
+#define LV_THEME_DEFAULT_COLOR_PRIMARY      LV_COLOR_RED
+#define LV_THEME_DEFAULT_COLOR_SECONDARY    LV_COLOR_BLUE
+#define LV_THEME_DEFAULT_FLAG               LV_THEME_MATERIAL_FLAG_LIGHT
+#define LV_THEME_DEFAULT_FONT_SMALL         &lv_font_montserrat_16
+#define LV_THEME_DEFAULT_FONT_NORMAL        &lv_font_montserrat_16
+#define LV_THEME_DEFAULT_FONT_SUBTITLE      &lv_font_montserrat_16
+#define LV_THEME_DEFAULT_FONT_TITLE         &lv_font_montserrat_16
 
 /****************************************************************************
  *    FONT USAGE
  ****************************************************************************/
 
-/* The built-in fonts contains the ASCII range and
- * some Symbols with  4 bit-per-pixel.
+/* The built-in fonts contains the ASCII range and some Symbols
+ * with  4 bit-per-pixel.
  * The symbols are available via `LV_SYMBOL_...` defines
- * More info about fonts: https://docs.littlevgl.com/#Fonts
- * To create a new font go to: https://littlevgl.com/ttf-font-to-c-array
+ * More info about fonts: https://docs.lvgl.io/v7/en/html/overview/font.html
+ * To create a new font go to: https://lvgl.com/ttf-font-to-c-array
  */
 
-/* Robot fonts with bpp = 4
- * https://fonts.google.com/specimen/Roboto
+/* Montserrat fonts with bpp = 4
+ * https://fonts.google.com/specimen/Montserrat
  */
 
-#ifdef CONFIG_USE_LV_FONT_ROBOTO_12
-#define LV_FONT_ROBOTO_12     CONFIG_USE_LV_FONT_ROBOTO_12
-#else
-#define LV_FONT_ROBOTO_12     0
-#endif
+/* They only take up storage space after being used,
+ * so we can enable them all by default
+ */
 
-#ifdef CONFIG_USE_LV_FONT_ROBOTO_16
-#define LV_FONT_ROBOTO_16     CONFIG_USE_LV_FONT_ROBOTO_16
-#else
-#define LV_FONT_ROBOTO_16     0
-#endif
-
-#ifdef CONFIG_USE_LV_FONT_ROBOTO_22
-#define LV_FONT_ROBOTO_22     CONFIG_USE_LV_FONT_ROBOTO_22
-#else
-#define LV_FONT_ROBOTO_22     0
-#endif
-
-#ifdef CONFIG_USE_LV_FONT_ROBOTO_28
-#define LV_FONT_ROBOTO_28     CONFIG_USE_LV_FONT_ROBOTO_28
-#else
-#define LV_FONT_ROBOTO_28     0
-#endif
+#define LV_FONT_MONTSERRAT_12    1
+#define LV_FONT_MONTSERRAT_14    1
+#define LV_FONT_MONTSERRAT_16    1
+#define LV_FONT_MONTSERRAT_18    1
+#define LV_FONT_MONTSERRAT_20    1
+#define LV_FONT_MONTSERRAT_22    1
+#define LV_FONT_MONTSERRAT_24    1
+#define LV_FONT_MONTSERRAT_26    1
+#define LV_FONT_MONTSERRAT_28    1
+#define LV_FONT_MONTSERRAT_30    1
+#define LV_FONT_MONTSERRAT_32    1
+#define LV_FONT_MONTSERRAT_34    1
+#define LV_FONT_MONTSERRAT_36    1
+#define LV_FONT_MONTSERRAT_38    1
+#define LV_FONT_MONTSERRAT_40    1
+#define LV_FONT_MONTSERRAT_42    1
+#define LV_FONT_MONTSERRAT_44    1
+#define LV_FONT_MONTSERRAT_46    1
+#define LV_FONT_MONTSERRAT_48    1
 
 /* Demonstrate special features */
-
-#define LV_FONT_ROBOTO_12_SUBPX 1
-#define LV_FONT_ROBOTO_28_COMPRESSED 1  /* bpp = 3 */
+#define LV_FONT_MONTSERRAT_12_SUBPX      0
+#define LV_FONT_MONTSERRAT_28_COMPRESSED 0  /* bpp = 3 */
+#define LV_FONT_DEJAVU_16_PERSIAN_HEBREW 0  /* Hebrew, Arabic, PErisan letters and all their forms */
+#define LV_FONT_SIMSUN_16_CJK            0  /* 1000 most common CJK radicals */
 
 /* Pixel perfect monospace font
  * http://pelulamu.net/unscii/
@@ -616,28 +664,6 @@ typedef void * lv_indev_drv_user_data_t;            /* Type of user data in the 
  */
 
 #define LV_FONT_CUSTOM_DECLARE
-
-/* Always set a default font from the built-in fonts */
-
-#ifdef CONFIG_LV_FONT_DEFAULT_ROBOTO_12
-#define LV_FONT_DEFAULT        &lv_font_roboto_12
-#endif
-
-#ifdef CONFIG_LV_FONT_DEFAULT_ROBOTO_16
-#define LV_FONT_DEFAULT        &lv_font_roboto_16
-#endif
-
-#ifdef CONFIG_LV_FONT_DEFAULT_ROBOTO_22
-#define LV_FONT_DEFAULT        &lv_font_roboto_22
-#endif
-
-#ifdef CONFIG_LV_FONT_DEFAULT_ROBOTO_28
-#define LV_FONT_DEFAULT        &lv_font_roboto_28
-#endif
-
-#ifdef CONFIG_LV_FONT_DEFAULT_UNSCII_8
-#define LV_FONT_DEFAULT        &lv_font_unscii_8
-#endif
 
 /* Enable it if you have fonts with a lot of characters.
  * The limit depends on the font size, font face and bpp
@@ -680,7 +706,7 @@ typedef void * lv_font_user_data_t;
  * To disable, set to a value <= 0
  */
 
-#define LV_TXT_LINE_BREAK_LONG_LEN          12
+#define LV_TXT_LINE_BREAK_LONG_LEN          0
 
 /* Minimum number of characters in a long word to put
  * on a line before a break.
@@ -718,6 +744,13 @@ typedef void * lv_font_user_data_t;
 #define LV_BIDI_BASE_DIR_DEF  LV_BIDI_DIR_AUTO
 #endif
 
+/* Enable Arabic/Persian processing
+ * In these languages characters should be replaced with
+ * an other form based on their position in the text
+ */
+
+#define LV_USE_ARABIC_PERSIAN_CHARS 0
+
 /* Change the built in (v)snprintf functions */
 
 #define LV_SPRINTF_CUSTOM   0
@@ -753,7 +786,7 @@ typedef void * lv_obj_user_data_t;
  * in all 4 directions (-32k..+32k px)
  */
 
-#define LV_USE_EXT_CLICK_AREA  LV_EXT_CLICK_AREA_OFF
+#define LV_USE_EXT_CLICK_AREA  LV_EXT_CLICK_AREA_TINY
 
 /****************************************************************************
  *  LV OBJ X USAGE
@@ -1027,12 +1060,4 @@ typedef void * lv_obj_user_data_t;
 #  define _CRT_SECURE_NO_WARNINGS
 #endif
 
-/****************************************************************************
- * Included Files
- ****************************************************************************/
-
-/* Be sure every define has a default value */
-
-#include "lvgl/src/lv_conf_checker.h"
-
-#endif /* __APPS_GRAPHICS_LITTLEVGL_LV_CONF_H */
+#endif /* __APPS_GRAPHICS_LVGL_LV_CONF_H */
