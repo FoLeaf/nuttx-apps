@@ -85,6 +85,10 @@ CFLAGS   += $(subst ",, $(CONFIG_LV_OPTLEVEL))
 CXXFLAGS += $(subst ",, $(CONFIG_LV_OPTLEVEL))
 endif
 
+ifneq ($(CONFIG_LV_USE_RLOTTIE),)
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/../external/rlottie/inc}
+endif
+
 # Set up build configuration and environment
 
 WD := ${shell echo $(CURDIR) | sed -e 's/ /\\ /g'}
