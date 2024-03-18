@@ -26,7 +26,9 @@
 #include <unistd.h>
 #include <sys/boardctl.h>
 
-#include <lvgl/lvgl.h>
+#include <sys/boardctl.h>
+
+#include <lvgl.h>
 #include <lvgl/demos/lv_demos.h>
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
 #include <uv.h>
@@ -123,6 +125,13 @@ int main(int argc, FAR char *argv[])
       LV_LOG_ERROR("LVGL already initialized! aborting.");
       return -1;
     }
+
+#ifdef NEED_BOARDINIT
+  /* Perform board-specific driver initialization */
+
+  boardctl(BOARDIOC_INIT, 0);
+
+#endif
 
 #ifdef NEED_BOARDINIT
   /* Perform board-specific driver initialization */
