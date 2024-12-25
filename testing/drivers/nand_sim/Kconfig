@@ -5,6 +5,7 @@
 
 config TESTING_NAND_SIM
 	boolean "NAND Flash Simulator"
+	depends on MTD_NAND_RAM
 	default n
 	depends on MTD_NAND_RAM
 	---help---
